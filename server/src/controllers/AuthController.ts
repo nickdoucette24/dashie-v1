@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -11,29 +12,85 @@ const JWT_REFRESH_SECRET =
 /**
  * Register a new user
  */
+const registerSchema = z
+  .object({
+    email: z.string().email(),
+    password: z
+      .string()
+      .min(8)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain uppercase, lowercase, number and special character"
+      ),
+    confirmPassword: z.string().min(8),
+    firstName: z.string(),
+    lastName: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+export const validateRegister = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    registerSchema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors,
+      });
+      return;
+    }
+    next(error);
+  }
+};
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export const validateLogin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    loginSchema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors,
+      });
+      return;
+    }
+    next(error);
+  }
+};
+
 export const register = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { username, email, password, firstName, lastName } = req.body;
-
-    // Validate required fields
-    if (!username || !email || !password) {
-      res.status(400).json({ message: "Please provide all required fields" });
-      return;
-    }
+    const { email, password, firstName, lastName } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
+      $or: [{ email }],
     });
 
     if (existingUser) {
-      res
-        .status(400)
-        .json({ message: "User already exists with that email or username" });
+      res.status(400).json({ message: "User already exists with that email" });
       return;
     }
 
@@ -43,7 +100,6 @@ export const register = async (
 
     // Create new user
     const user = new User({
-      username,
       email,
       password: hashedPassword,
       firstName,
@@ -86,12 +142,6 @@ export const login = async (
 ): Promise<void> => {
   try {
     const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      res.status(400).json({ message: "Please provide email and password" });
-      return;
-    }
 
     // Find user
     const user = await User.findOne({ email });

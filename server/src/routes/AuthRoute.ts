@@ -5,12 +5,13 @@ import {
   getProfile,
   refreshToken,
   logout,
+  validateRegister,
 } from "../controllers/AuthController";
 import { authenticate } from "../middleware/auth";
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/register", validateRegister, register);
 
 router.post("/login", login);
 
