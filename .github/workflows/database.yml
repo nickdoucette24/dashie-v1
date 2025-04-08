@@ -1,0 +1,49 @@
+name: Database Migrations
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  run-migrations:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd mongosh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Setup Environment
+        run: |
+          cd server
+          echo "# MongoDB configuration for CI" > .env
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
+          echo "MONGODB_DB_NAME=${{ secrets.MONGODB_DB_NAME }}" >> .env
+
+      - name: Run migrations
+        run: |
+          cd server
+          npm run migrate

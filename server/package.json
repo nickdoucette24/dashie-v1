@@ -7,22 +7,32 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "migrate": "ts-node src/migrations/index.ts",
+    "test-connection": "ts-node src/utils/testConnection.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.15.0",
     "mongoose": "^8.13.2"
   },
   "devDependencies": {
-    "@types/mongoose": "^5.11.97",
+    "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.17",
+    "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/mongodb": "^4.0.7",
+    "@types/mongoose": "^5.11.97",
     "@types/node": "^22.14.0",
+    "@types/nodemon": "^3.1.1",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

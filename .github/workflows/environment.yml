@@ -1,0 +1,37 @@
+name: Environment Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-env:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          echo "# Environment configuration for Dashie-v1" > .env
+          echo "" >> .env
+          echo "# Application settings" >> .env
+          echo "APP_NAME=Dashie" >> .env
+          echo "APP_ENV=production" >> .env
+          echo "APP_DEBUG=false" >> .env
+          echo "APP_URL=${{ secrets.APP_URL }}" >> .env
+          echo "" >> .env
+          echo "# MongoDB configuration" >> .env
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
+          echo "MONGODB_DB_NAME=${{ secrets.MONGODB_DB_NAME }}" >> .env
+          echo "" >> .env
+          echo "# Authentication keys" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
+          echo "" >> .env
+          echo "# API keys" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+          echo "" >> .env
+          echo "# Other configurations" >> .env
+          echo "LOG_LEVEL=info" >> .env
+          echo "CACHE_DRIVER=file" >> .env
+          echo "QUEUE_CONNECTION=sync" >> .env
